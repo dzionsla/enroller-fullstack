@@ -2,7 +2,7 @@
   <div id="app">
     <h1>
       <img src="./assets/logo.svg" alt="Enroller" class="logo">
-      System do zapisów na zajęcia
+      System do zapisów na zajęcia {{ msg }}
     </h1>
     <div v-if="authenticatedUsername">
       <h2>Witaj {{ authenticatedUsername }}!
@@ -11,7 +11,14 @@
       <meetings-page :username="authenticatedUsername"></meetings-page>
     </div>
     <div v-else>
-      <login-form @login="login($event)"></login-form>
+      <button @click='registering = false'> Zaloguj się </button>
+      <button @click='registering = true'> Zarejestruj się </button>
+      <p v-if="msg"> Logowanie się nie powiodło </p>	
+      <login-form @login="login($event)"
+      			  v-if="!registering"></login-form>
+      <login-form @login="register($event)"
+      			  button-label="Zarejestruj się"
+      			  v-else="!registering"></login-form>
     </div>
   </div>
 </template>
@@ -25,7 +32,10 @@
         components: {LoginForm, MeetingsPage},
         data() {
             return {
-                authenticatedUsername: ""
+                authenticatedUsername: "",
+                registering: false,
+                msg: false
+                
             };
         },
         methods: {
@@ -34,6 +44,15 @@
             },
             logout() {
                 this.authenticatedUsername = '';
+            },
+            register(user) {
+            	 this.$http.post('participants', user)
+            	     .then(response => {
+            	         this.msg = false;// udało się
+            	     })
+            	     .catch(response => {
+            	         this.msg = true;// nie udało sie     
+            	     });
             }
         }
     };
